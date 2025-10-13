@@ -119,7 +119,7 @@ class SiglipAttention(nn.Module):
 
         attn_output = self.out_proj(attn_output)
 
-        return attn_output
+        return attn_output, attn_weights
 
  
 class SiglipMLP(nn.Module):
@@ -165,8 +165,19 @@ class SiglipEncoderLayer(nn.Module):
 
         return hidden_states
 
+class SiglipEncoder(nn.Module):
+    def __init__(self, config: SigLipVisionConfig):
+        self.config = config
+        self.layers = nn.ModuleList([SiglipEncoderLayer(config) for _ in range(config.num_hidden_layers)])
 
+    def forward(self,
+                input_embeds: torch.Tensor) -> torch.Tensor:
+        hidden_states = input_embeds
 
+        for encoder_layer in self.layers:
+            hidden_states = encoder_layer(hidden_states)
+
+        return hidden_states
 
 class SiglipVisionTransformer(nn.Module):
     def __init__(self, config: SigLipVisionConfig):
@@ -175,7 +186,7 @@ class SiglipVisionTransformer(nn.Module):
         embed_dim = config.hidden_size
 
         self.embedding = SigLipVisionEmbeddings(config) # We will implement this later -> Done
-        self.encoder = SigLipVisionEncoder(config) # We will implement this later
+        self.encoder = SiglipEncoder(config) # We will implement this later
         self.post_layernorm = nn.LayerNorm(embed_dim, eps=config.layer_norm_eps)
 
     def forward(self, pixel_values: torch.Tensor) -> torch.Tensor:
