@@ -1,3 +1,6 @@
+# Implementation of SigLip image encoder for PaliGemma
+
+
 from typing import Optional, Tuple
 import torch
 from torch import nn
